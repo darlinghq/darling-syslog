@@ -51,7 +51,7 @@ routine _asl_server_query_timeout
 	request : ooline_data, dealloc;
 	startid : uint64_t;
 	count : int;
-	WaitTime timeout: natural_t;
+	WaitTime timeout: uintptr_t;
 	flags : int;
 	out reply : ooline_data, dealloc;
 	out lastid : uint64_t;

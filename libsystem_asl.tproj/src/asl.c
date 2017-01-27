@@ -51,10 +51,10 @@
 #include <pthread.h>
 #include <dispatch/dispatch.h>
 #include <libkern/OSAtomic.h>
-#include <os/activity.h>
+//#include <os/activity.h>
 #include <os/trace.h>
 #include <os/log_private.h>
-#include <asl_ipc.h>
+//#include <asl_ipc.h>
 #include <asl_client.h>
 #include <asl_core.h>
 #include <asl_msg.h>
@@ -905,7 +905,7 @@ asl_base_msg(asl_client_t *asl, uint32_t level, const struct timeval *tv, const 
 	asl_msg_t *aux;
 	int status;
 	unsigned int osacount = 1;
-	os_activity_t osaid = 0;
+	//os_activity_t osaid = 0;
 
 	aux = asl_msg_new(ASL_TYPE_MSG);
 	if (aux == NULL) return NULL;
@@ -929,13 +929,14 @@ asl_base_msg(asl_client_t *asl, uint32_t level, const struct timeval *tv, const 
 	/* PID */
 	snprintf(aux_val, sizeof(aux_val), "%u", getpid());
 	asl_msg_set_key_val(aux, ASL_KEY_PID, aux_val);
-
+#if 0
 	/* OSActivityID */
 	if (os_activity_get_active(&osaid, &osacount) == 1)
 	{
 		snprintf(aux_val, sizeof(aux_val), "0x%016llx", (uint64_t)osaid);
 		asl_msg_set_key_val(aux, ASL_KEY_OS_ACTIVITY_ID, aux_val);
 	}
+#endif
 
 	/* Sender */
 	if ((sstr == NULL) && (asl != NULL))

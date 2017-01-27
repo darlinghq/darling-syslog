@@ -38,7 +38,7 @@
 #include <crt_externs.h>
 #include <asl.h>
 #include <asl_private.h>
-#include <asl_ipc.h>
+//#include <asl_ipc.h>
 #include <asl_core.h>
 #include <asl_client.h>
 
