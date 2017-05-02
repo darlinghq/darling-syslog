@@ -8,7 +8,7 @@ include_directories(
 	${CMAKE_SOURCE_DIR}/src/external/libdispatch
 )
 
-mig(asl_ipc.defs)
+# mig(asl_ipc.defs)
 
 add_library(aslcommon OBJECT
 	asl_common.c

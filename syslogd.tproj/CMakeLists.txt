@@ -14,6 +14,8 @@ include_directories(
 
 add_definitions(-DPRIVATE)
 
+mig(../aslcommon/asl_ipc.defs)
+
 set(syslogd_sources
 	asl_action.c
 	bsd_in.c

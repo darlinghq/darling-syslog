@@ -12,7 +12,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src/launchd/liblaunch)
 include_directories(${CMAKE_SOURCE_DIR}/src/libinfo/membership.subproj)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-mig(asl_ipc.defs)
+mig(../aslcommon/asl_ipc.defs)
 
 set(DYLIB_INSTALL_NAME "/usr/lib/system/libsystem_asl.dylib")
 add_circular(system_asl FAT
