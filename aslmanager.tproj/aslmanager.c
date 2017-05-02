@@ -477,7 +477,9 @@ main(int argc, char *argv[])
 	});
 	xpc_connection_resume(listener);
 
+#ifndef DARLING
 	cache_delete_register();
+#endif
 
 	dispatch_main();
 }
