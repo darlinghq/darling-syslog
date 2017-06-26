@@ -1,16 +1,8 @@
 project(libsystem_asl)
 
-cmake_minimum_required(VERSION 2.4.0)
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -nostdinc -D__DARWIN_UNIX03 -fPIC -DPRIVATE")
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -nostdlib")
-include_directories(${CMAKE_SOURCE_DIR}/src/libc/darwin)
-include_directories(${CMAKE_SOURCE_DIR}/src/external/libdispatch)
-include_directories(${CMAKE_SOURCE_DIR}/src/external/libclosure)
-include_directories(${CMAKE_SOURCE_DIR}/src/duct/include)
-include_directories(${CMAKE_SOURCE_DIR}/src/launchd/liblaunch)
-include_directories(${CMAKE_SOURCE_DIR}/src/libinfo/membership.subproj)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+add_definitions(
+	-DPRIVATE
+)
 
 mig(../aslcommon/asl_ipc.defs)
 
@@ -51,4 +43,3 @@ add_circular(system_asl FAT
 )
 
 install(TARGETS system_asl DESTINATION libexec/darling/usr/lib/system)
-
