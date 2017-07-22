@@ -13,8 +13,6 @@ add_definitions(
 	-DPRIVATE
 )
 
-mig(../aslcommon/asl_ipc.defs)
-
 set(syslog_sources
 	syslog.c
 	$<TARGET_OBJECTS:aslcommon>

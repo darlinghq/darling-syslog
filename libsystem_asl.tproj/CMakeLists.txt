@@ -4,8 +4,6 @@ add_definitions(
 	-DPRIVATE
 )
 
-mig(../aslcommon/asl_ipc.defs)
-
 set(DYLIB_INSTALL_NAME "/usr/lib/system/libsystem_asl.dylib")
 add_circular(system_asl FAT
 	SOURCES
