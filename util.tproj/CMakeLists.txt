@@ -21,5 +21,5 @@ set(syslog_sources
 
 add_darling_executable(syslog ${syslog_sources})
 
-install(TARGETS syslog DESTINATION libexec/darling/usr/sin)
+install(TARGETS syslog DESTINATION libexec/darling/usr/bin)
 install(FILES syslog.1 DESTINATION libexec/darling/usr/share/man/man1)
