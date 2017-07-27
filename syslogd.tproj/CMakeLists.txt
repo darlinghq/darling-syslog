@@ -24,7 +24,7 @@ set(syslogd_sources
 	syslogd.c
 	udp_in.c
 	$<TARGET_OBJECTS:aslcommon>
-	${CMAKE_CURRENT_BINARY_DIR}/../aslcommon/asl_ipcServer.c
+	$<TARGET_OBJECTS:asl_ipc_server>
 )
 
 add_darling_executable(syslogd ${syslogd_sources})

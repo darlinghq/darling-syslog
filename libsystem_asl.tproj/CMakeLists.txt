@@ -20,9 +20,9 @@ add_circular(system_asl FAT
 		src/asl_string.c
 		src/asl_util.c
 		src/syslog.c
-		${CMAKE_CURRENT_BINARY_DIR}/../aslcommon/asl_ipcUser.c
 	OBJECTS
 		$<TARGET_OBJECTS:aslcommon>
+		$<TARGET_OBJECTS:asl_ipc_user>
 	SIBLINGS
 		system_c
 		system_kernel

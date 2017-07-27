@@ -16,7 +16,7 @@ add_definitions(
 set(syslog_sources
 	syslog.c
 	$<TARGET_OBJECTS:aslcommon>
-	${CMAKE_CURRENT_BINARY_DIR}/../aslcommon/asl_ipcUser.c
+	$<TARGET_OBJECTS:asl_ipc_user>
 )
 
 add_darling_executable(syslog ${syslog_sources})
