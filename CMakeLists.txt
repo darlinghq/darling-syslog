@@ -1,6 +1,6 @@
 project(syslog)
 
-mig(../aslcommon/asl_ipc.defs)
+mig(aslcommon/asl_ipc.defs)
 
 add_subdirectory(aslcommon)
 add_subdirectory(libsystem_asl.tproj)
