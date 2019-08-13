@@ -2,12 +2,12 @@ project(syslog)
 
 mig(aslcommon/asl_ipc.defs)
 
-add_library(asl_ipc_user OBJECT
+add_darling_object_library(asl_ipc_user
 	aslcommon/asl_ipcUser.c
 )
 make_fat(asl_ipc_user)
 
-add_library(asl_ipc_server OBJECT
+add_darling_object_library(asl_ipc_server
 	aslcommon/asl_ipcServer.c
 )
 make_fat(asl_ipc_server)
