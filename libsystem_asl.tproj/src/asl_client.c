@@ -38,7 +38,7 @@
 #include <crt_externs.h>
 #include <asl.h>
 #include <asl_private.h>
-//#include <asl_ipc.h>
+#include <asl_ipc.h>
 #include <asl_core.h>
 #include <asl_client.h>
 
@@ -48,7 +48,7 @@
 __private_extern__ ASL_STATUS asl_file_open_write_fd(int descriptor, asl_file_t **s);
 
 /* private asl SPI */
-__private_extern__ ASL_STATUS asl_client_internal_send(asl_object_t client, asl_object_t msg);
+__private_extern__ ASL_STATUS asl_client_internal_send(asl_object_t client, asl_object_t msg, void *addr);
 
 #pragma mark -
 #pragma mark asl_client_t
@@ -200,7 +200,7 @@ asl_client_release(asl_client_t *client)
 ASL_STATUS
 asl_client_send(asl_client_t *client, asl_msg_t *msg)
 {
-	return asl_client_internal_send((asl_object_t)client, (asl_object_t)msg);
+	return asl_client_internal_send((asl_object_t)client, (asl_object_t)msg, __builtin_return_address(0));
 }
 
 static asl_msg_list_t *
@@ -240,8 +240,9 @@ _do_server_match(asl_msg_list_t *qlist, size_t *last, size_t start, size_t count
 	count64 = count;
 
 	kstatus = _asl_server_match(asl_server_port, vmstr, len, start64, count64, duration, dir, (caddr_t *)&res, &reslen, &last64, (int *)&status);
-	*last = last64;
+	if (kstatus != KERN_SUCCESS) return NULL;
 
+	*last = last64;
 	out = asl_msg_list_from_string(res);
 	vm_deallocate(mach_task_self(), (vm_address_t)res, reslen);
 
@@ -545,7 +546,7 @@ _jump_dealloc(asl_object_private_t *obj)
 }
 
 static void
-_jump_append(asl_object_private_t *obj, asl_object_private_t *newobj)
+_jump_append(asl_object_private_t *obj, asl_object_private_t *newobj, void *addr)
 {
 	int type = asl_get_type((asl_object_t)newobj);
 
@@ -555,12 +556,12 @@ _jump_append(asl_object_private_t *obj, asl_object_private_t *newobj)
 		asl_msg_list_reset_iteration((asl_msg_list_t *)newobj, 0);
 		while (NULL != (msg = asl_msg_list_next((asl_msg_list_t *)newobj)))
 		{
-			if (asl_client_internal_send((asl_object_t)obj, (asl_object_t)msg) != ASL_STATUS_OK) return;
+			if (asl_client_internal_send((asl_object_t)obj, (asl_object_t)msg, addr) != ASL_STATUS_OK) return;
 		}
 	}
 	else if ((type == ASL_TYPE_MSG) || (type == ASL_TYPE_QUERY))
 	{
-		asl_client_internal_send((asl_object_t)obj, (asl_object_t)newobj);
+		asl_client_internal_send((asl_object_t)obj, (asl_object_t)newobj, addr);
 	}
 }
 

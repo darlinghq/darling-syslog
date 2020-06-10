@@ -62,6 +62,11 @@
 
 #define ASL_KEY_FREE_NOTE "ASLFreeNotify"
 #define ASL_KEY_MESSAGETRACER "com.apple.message.domain"
+#define ASL_KEY_POWERMANAGEMENT "com.apple.iokit.domain"
+#define ASL_KEY_CFLOG_LOCAL_TIME "CFLog Local Time"
+
+#define FACILITY_LASTLOG "com.apple.system.lastlog"
+#define FACILITY_UTMPX "com.apple.system.utmpx"
 
 /* remote control bits */
 #define EVAL_LEVEL_MASK   0x000000ff
@@ -73,6 +78,7 @@
 #define EVAL_ASL_FILE     0x00100000
 #define EVAL_TUNNEL       0x00200000
 #define EVAL_QUOTA        0x00400000
+#define EVAL_MT_SHIM      0x00800000
 
 /*
  * Private types
@@ -103,19 +109,19 @@
 
 __BEGIN_DECLS
 
-int asl_store_location() __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_4_3);
-char *asl_remote_notify_name() __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_4_3);
-int asl_syslog_faciliy_name_to_num(const char *name) __OSX_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_2_0);
-const char *asl_syslog_faciliy_num_to_name(int n) __OSX_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_2_0);
-int asl_trigger_aslmanager(void) __OSX_AVAILABLE_STARTING(__MAC_10_10, __IPHONE_7_0);
-int asl_get_filter(asl_object_t client, int *local, int *master, int *remote, int *active) __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_4_3);
-uint32_t asl_set_local_control(asl_object_t client, uint32_t filter) __OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0);
-uint32_t asl_get_local_control(asl_object_t client) __OSX_AVAILABLE_STARTING(__MAC_10_11, __IPHONE_9_0);
+int asl_store_location() __API_DEPRECATED("os_log(3) has replaced asl(3)", macosx(10.7,10.12), ios(4.3,10.0), watchos(2.0,3.0), tvos(9.0,10.0));
+char *asl_remote_notify_name() __API_DEPRECATED("os_log(3) has replaced asl(3)", macosx(10.7,10.12), ios(4.3,10.0), watchos(2.0,3.0), tvos(9.0,10.0));
+int asl_syslog_faciliy_name_to_num(const char *name) __API_DEPRECATED("os_log(3) has replaced asl(3)", macosx(10.5,10.12), ios(2.0,10.0), watchos(2.0,3.0), tvos(9.0,10.0));
+const char *asl_syslog_faciliy_num_to_name(int n) __API_DEPRECATED("os_log(3) has replaced asl(3)", macosx(10.5,10.12), ios(2.0,10.0), watchos(2.0,3.0), tvos(9.0,10.0));
+int asl_trigger_aslmanager(void) __API_DEPRECATED("os_log(3) has replaced asl(3)", macosx(10.10,10.12), ios(7.0,10.0), watchos(2.0,3.0), tvos(9.0,10.0));
+int asl_get_filter(asl_object_t client, int *local, int *master, int *remote, int *active) __API_DEPRECATED("os_log(3) has replaced asl(3)", macosx(10.7,10.12), ios(4.3,10.0), watchos(2.0,3.0), tvos(9.0,10.0));
+uint32_t asl_set_local_control(asl_object_t client, uint32_t filter) __API_DEPRECATED("os_log(3) has replaced asl(3)", macosx(10.11,10.12), ios(9.0,10.0), watchos(2.0,3.0), tvos(9.0,10.0));
+uint32_t asl_get_local_control(asl_object_t client) __API_DEPRECATED("os_log(3) has replaced asl(3)", macosx(10.11,10.12), ios(9.0,10.0), watchos(2.0,3.0), tvos(9.0,10.0));
 
 /* EXCLUSIVLY FOR USE BY DEV TOOLS */
 /* DO NOT USE THIS INTERFACE OTHERWISE */
 
-uint32_t asl_store_match_timeout(void *ignored, void *query_v1, void **result_v1, uint64_t *last_id, uint64_t start_id, uint32_t count, int32_t direction, uint32_t usec) __OSX_AVAILABLE_STARTING(__MAC_10_10, __IPHONE_7_0);
+uint32_t asl_store_match_timeout(void *ignored, void *query_v1, void **result_v1, uint64_t *last_id, uint64_t start_id, uint32_t count, int32_t direction, uint32_t usec) __API_DEPRECATED("os_log(3) has replaced asl(3)", macosx(10.10,10.12), ios(7.0,10.0), watchos(2.0,3.0), tvos(9.0,10.0));
 
 __END_DECLS
 

@@ -60,19 +60,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdarg.h>
 #include <pthread.h>
 #include <dispatch/dispatch.h>
 #include <asl.h>
 #include <asl_msg.h>
 #include <asl_private.h>
-#include <os/trace.h>
+#include <os/log.h>
 #include <os/log_private.h>
-
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 
 #define	LOG_NO_NOTIFY	0x1000
 extern const char *asl_syslog_faciliy_num_to_name(int n);
@@ -95,19 +90,22 @@ __private_extern__ int _sl_mask = 0;
 
 #define EVAL_ASL (EVAL_SEND_ASL | EVAL_TEXT_FILE | EVAL_ASL_FILE)
 
-static const uint8_t shim_syslog_to_trace_type[8] = {
-	OS_TRACE_TYPE_FAULT, OS_TRACE_TYPE_FAULT, OS_TRACE_TYPE_FAULT, // LOG_EMERG, LOG_ALERT, LOG_CRIT
-	OS_TRACE_TYPE_ERROR, // LOG_ERROR
-	OS_TRACE_TYPE_RELEASE, OS_TRACE_TYPE_RELEASE, OS_TRACE_TYPE_RELEASE, // LOG_WARN, LOG_NOTICE, LOG_INFO
-	OS_TRACE_TYPE_DEBUG // LOG_DEBUG
+static const os_log_type_t shim_syslog_to_log_type[8] = {
+	OS_LOG_TYPE_DEFAULT,    // LOG_EMERG
+	OS_LOG_TYPE_DEFAULT,    // LOG_ALERT
+	OS_LOG_TYPE_DEFAULT,    // LOG_CRIT
+	OS_LOG_TYPE_DEFAULT,    // LOG_ERR
+	OS_LOG_TYPE_DEFAULT,    // LOG_WARNING
+	OS_LOG_TYPE_DEFAULT,    // LOG_NOTICE
+	OS_LOG_TYPE_INFO,       // LOG_INFO
+	OS_LOG_TYPE_DEBUG       // LOG_DEBUG
 };
 
 extern uint32_t _asl_evaluate_send(asl_object_t client, asl_object_t m, int slevel);
 extern uint32_t _asl_lib_vlog(asl_object_t obj, uint32_t eval, asl_object_t msg, const char *format, va_list ap);
+extern uint32_t _asl_lib_vlog_text(asl_object_t obj, uint32_t eval, asl_object_t msg, const char *format, va_list ap);
 
-
-/* SHIM SPI */
-asl_object_t
+static void
 _syslog_asl_client()
 {
 	pthread_mutex_lock(&_sl_lock);
@@ -118,111 +116,93 @@ _syslog_asl_client()
 		asl_set_filter(_sl_asl, _sl_mask);
 	}
 	pthread_mutex_unlock(&_sl_lock);
-
-	return _sl_asl;
 }
 
-/*
- * syslog, vsyslog --
- *	print message on log file; output is intended for syslogd(8).
- */
+static void
+_vsyslog(int pri, const char *fmt, va_list ap, void *addr, bool mirror)
+{
+	int level = pri & LOG_PRIMASK;
+	int fac = pri & LOG_FACMASK;
+	asl_object_t msg;
+	uint32_t eval;
+	bool trace;
+
+	_syslog_asl_client();
+
+	msg = asl_new(ASL_TYPE_MSG);
+
+	if (fac != 0)
+	{
+		const char *facility = asl_syslog_faciliy_num_to_name(fac);
+		if (facility != NULL) asl_set(msg, ASL_KEY_FACILITY, facility);
+	}
+
+	eval = _asl_evaluate_send(_sl_asl, msg, level);
+	trace = (eval & EVAL_SEND_TRACE) && os_log_shim_enabled(addr);
+
+	if (trace)
+	{
+		va_list ap_copy;
+		os_log_type_t type = shim_syslog_to_log_type[level];
+
+		va_copy(ap_copy, ap);
+		os_log_with_args(OS_LOG_DEFAULT, type, fmt, ap_copy, addr);
+		va_end(ap_copy);
+
+		if ((eval & EVAL_TEXT_FILE) && !mirror)
+		{
+			_asl_lib_vlog_text(_sl_asl, eval, msg, fmt, ap);
+		}
+	}
+
+	if ((eval & EVAL_ASL) && (mirror || !trace))
+	{
+		_asl_lib_vlog(_sl_asl, eval, msg, fmt, ap);
+	}
+
+	asl_release(msg);
+}
+
+#if TARGET_OS_OSX
+
+extern typeof(syslog) syslog_legacy asm("_syslog");
+extern typeof(syslog) syslog_os_log asm("_syslog" __DARWIN_SUF_EXTSN);
+
+void
+syslog_legacy(int pri, const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	_vsyslog(pri, fmt, ap, __builtin_return_address(0), true);
+	va_end(ap);
+}
+
+void
+syslog_os_log(int pri, const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	_vsyslog(pri, fmt, ap, __builtin_return_address(0), false);
+	va_end(ap);
+}
+
+#else /* !TARGET_OS_OSX */
+
+void
+syslog(int pri, const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	_vsyslog(pri, fmt, ap, __builtin_return_address(0), false);
+	va_end(ap);
+}
+
+#endif /* !TARGET_OS_OSX */
 
 void
 vsyslog(int pri, const char *fmt, va_list ap)
 {
-	int level = pri & LOG_PRIMASK;
-	uint32_t eval;
- 
-	_syslog_asl_client();
-
-	eval = _asl_evaluate_send(_sl_asl, NULL, level);
-	
-	if (eval & EVAL_SEND_TRACE)
-	{
-		va_list ap_copy;
-		uint8_t trace_type = shim_syslog_to_trace_type[level];
-
-		va_copy(ap_copy, ap);
-		os_log_shim_with_va_list(__builtin_return_address(0), OS_LOG_DEFAULT, trace_type, fmt, ap_copy, NULL);
-		va_end(ap_copy);
-	}
-	
-	if (os_log_shim_legacy_logging_enabled() && (eval & EVAL_ASL))
-	{
-		asl_object_t msg = asl_new(ASL_TYPE_MSG);
-		const char *facility;
-		int fac = pri & LOG_FACMASK;
-		
-		if (fac != 0)
-		{
-			facility = asl_syslog_faciliy_num_to_name(fac);
-			if (facility != NULL) asl_set(msg, ASL_KEY_FACILITY, facility);
-		}
-		
-		if (eval & EVAL_SEND_TRACE) asl_set(msg, "ASLSHIM", "2");
-		
-		_asl_lib_vlog(_sl_asl, eval, msg, fmt, ap);
-		
-		asl_release(msg);
-	}
-}
-
-void
-#ifdef __STDC__
-syslog(int pri, const char *fmt, ...)
-#else
-syslog(pri, fmt, va_alist)
-int pri;
-char *fmt;
-va_dcl
-#endif
-{
-	int level = pri & LOG_PRIMASK;
-	uint32_t eval;
- 
-	_syslog_asl_client();
-
-	eval = _asl_evaluate_send(_sl_asl, NULL, level);
-	
-	if (eval & EVAL_SEND_TRACE)
-	{
-		va_list ap;
-		uint8_t trace_type = shim_syslog_to_trace_type[level];
-		
-#ifdef __STDC__
-		va_start(ap, fmt);
-#else
-		va_start(ap);
-#endif
-		os_log_shim_with_va_list(__builtin_return_address(0), OS_LOG_DEFAULT, trace_type, fmt, ap, NULL);
-		va_end(ap);
-	}
-	
-	if (os_log_shim_legacy_logging_enabled() && (eval & EVAL_ASL))
-	{
-		va_list ap;
-		asl_object_t msg = asl_new(ASL_TYPE_MSG);
-		const char *facility;
-		int fac = pri & LOG_FACMASK;
-
-		if (fac != 0)
-		{
-			facility = asl_syslog_faciliy_num_to_name(fac);
-			if (facility != NULL) asl_set(msg, ASL_KEY_FACILITY, facility);
-		}
-	
-		if (eval & EVAL_SEND_TRACE) asl_set(msg, "ASLSHIM", "2");
-		
-#ifdef __STDC__
-		va_start(ap, fmt);
-#else
-		va_start(ap);
-#endif
-		_asl_lib_vlog(_sl_asl, eval, msg, fmt, ap);
-		va_end(ap);
-		
-		asl_release(msg);
-	}
+	_vsyslog(pri, fmt, ap, __builtin_return_address(0), false);
 }
 
 #ifndef BUILDING_VARIANT
@@ -273,6 +253,8 @@ closelog()
 
 	free(_sl_ident);
 	_sl_ident = NULL;
+
+	_sl_fac = 0;
 
 	pthread_mutex_unlock(&_sl_lock);
 }

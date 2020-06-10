@@ -53,7 +53,7 @@
 #define ASL_OPT_DB_FILE "asl_db_file"
 #define ASL_OPT_DB_MEMORY "asl_db_memory"
 
-#if TARGET_IPHONE_SIMULATOR
+#if TARGET_OS_SIMULATOR
 /* These paths are appropriately prefixed in the simulator */
 extern const char *_path_pidfile;
 extern const char *_path_syslogd_log;
@@ -186,7 +186,7 @@ int internal_log_message(const char *str);
 
 void send_to_direct_watchers(asl_msg_t *msg);
 
-#if !TARGET_IPHONE_SIMULATOR
+#if !TARGET_OS_SIMULATOR
 void launchd_callback();
 #endif
 
@@ -199,6 +199,7 @@ void asl_out_message(asl_msg_t *msg, int64_t msize);
 void bsd_out_message(asl_msg_t *msg, int64_t msize);
 int control_set_param(const char *s, bool eval);
 int asl_action_control_set_param(const char *s);
+void asl_action_out_module_query(asl_msg_t *q, asl_msg_t *m, bool all);
 
 /* notify SPI */
 uint32_t notify_register_plain(const char *name, int *out_token);
