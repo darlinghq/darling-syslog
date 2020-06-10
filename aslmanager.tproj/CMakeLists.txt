@@ -14,7 +14,6 @@ add_definitions(
 
 set(aslmanager_sources
 	aslmanager.c
-	#cache_delete.c
 	daemon.c
 	$<TARGET_OBJECTS:aslcommon>
 )

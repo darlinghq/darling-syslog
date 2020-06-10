@@ -15,6 +15,7 @@ add_circular(system_asl FAT
 		src/asl_legacy1.c
 		src/asl_msg.c
 		src/asl_msg_list.c
+		src/asl_mt_shim.c
 		src/asl_object.c
 		src/asl_store.c
 		src/asl_string.c
@@ -39,5 +40,7 @@ add_circular(system_asl FAT
 		system_dyld
 		xpc
 )
+
+add_dependencies(system_asl_obj syslog_generate_mig_headers)
 
 install(TARGETS system_asl DESTINATION libexec/darling/usr/lib/system)
