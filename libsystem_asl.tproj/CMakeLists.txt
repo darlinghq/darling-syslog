@@ -39,6 +39,7 @@ add_circular(system_asl FAT
 		system_duct
 		system_dyld
 		xpc
+		system_trace
 )
 
 add_dependencies(system_asl_obj syslog_generate_mig_headers)
