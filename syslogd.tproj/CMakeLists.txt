@@ -28,6 +28,9 @@ set(syslogd_sources
 )
 
 add_darling_executable(syslogd ${syslogd_sources})
+target_link_libraries(syslogd
+	bsm.0
+)
 
 install(TARGETS syslogd DESTINATION libexec/darling/usr/sbin)
 install(FILES asl.conf.osx RENAME asl.conf DESTINATION libexec/darling/etc)
