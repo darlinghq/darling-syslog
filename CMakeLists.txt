@@ -4,10 +4,9 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/libsystem_asl.tproj/include)
 
 mig(aslcommon/asl_ipc.defs)
 
-file(CREATE_LINK
+create_symlink(
 	"${DARLING_ROOT_RELATIVE_TO_SDK}/../../src/external/syslog/aslcommon/asl_ipc.h"
 	"${CMAKE_BINARY_DIR}/${DARLING_SDK_RELATIVE_PATH}/usr/include/asl_ipc.h"
-	SYMBOLIC
 )
 
 add_custom_target(syslog_generate_mig_headers
