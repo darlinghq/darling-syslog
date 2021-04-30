@@ -600,6 +600,11 @@ _asl_evaluate_send(asl_object_t client, asl_object_t m, int slevel)
 		if (!strcmp(val, asl_syslog_faciliy_num_to_name(LOG_INSTALL))) eval &= ~EVAL_SEND_TRACE;
 	}
 
+#ifdef DARLING
+	// hack to force ASL messages to be sent (because libtrace currently logs to ASL rather than having its own daemon)
+	eval |= EVAL_SEND_ASL;
+#endif
+
 	return eval;
 }
 
