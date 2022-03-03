@@ -2,6 +2,16 @@
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+<!--
+	*** temporary workaround ***
+	For darlingserver; until I can figure out why syslogd keeps crashing
+-->
+	<key>Disabled</key>
+	<true/>
+<!--
+	*** end temporary workaround ***
+-->
+
 	<key>Label</key>
 	<string>com.apple.syslogd</string>
 	<key>KeepAlive</key>
