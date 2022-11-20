@@ -4,6 +4,10 @@ add_definitions(
 	-DPRIVATE
 )
 
+add_compile_options(
+	-Wno-error=int-conversion
+)
+
 set(DYLIB_INSTALL_NAME "/usr/lib/system/libsystem_asl.dylib")
 add_circular(system_asl FAT
 	SOURCES
