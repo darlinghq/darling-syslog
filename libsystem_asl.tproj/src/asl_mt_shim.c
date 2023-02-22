@@ -24,9 +24,6 @@
 #include <asl_msg.h>
 #include <os/lock_private.h>
 #include <xpc/private.h>
-#ifdef DARLING
-#include <errno.h>
-#endif // DARLING
 
 #if TARGET_OS_OSX
 

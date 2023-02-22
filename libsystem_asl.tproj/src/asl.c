@@ -268,7 +268,11 @@ _asl_global_init()
 		char *str = getenv("ASL_DISABLE");
 		if ((str == NULL) || strcmp(str, "1"))
 		{
-			bootstrap_look_up2(bootstrap_port, ASL_SERVICE_NAME, &_asl_global.server_port, 0, BOOTSTRAP_PRIVILEGED_SERVER);
+			kern_return_t kstatus = bootstrap_look_up2(bootstrap_port, ASL_SERVICE_NAME, &_asl_global.server_port, 0, BOOTSTRAP_PRIVILEGED_SERVER);
+			if (kstatus != KERN_SUCCESS)
+			{
+				_asl_global.server_port = MACH_PORT_NULL;
+			}
 		}
 	});
 }
@@ -599,11 +603,6 @@ _asl_evaluate_send(asl_object_t client, asl_object_t m, int slevel)
 		/* don't send LOG_INSTALL messages to Activity Tracing */
 		if (!strcmp(val, asl_syslog_faciliy_num_to_name(LOG_INSTALL))) eval &= ~EVAL_SEND_TRACE;
 	}
-
-#ifdef DARLING
-	// hack to force ASL messages to be sent (because libtrace currently logs to ASL rather than having its own daemon)
-	eval |= EVAL_SEND_ASL;
-#endif
 
 	return eval;
 }
