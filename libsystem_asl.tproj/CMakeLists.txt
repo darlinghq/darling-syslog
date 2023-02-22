@@ -44,6 +44,7 @@ add_circular(system_asl FAT
 		system_dyld
 		xpc
 		system_trace
+		system_darwin
 )
 
 add_dependencies(system_asl_obj syslog_generate_mig_headers)
