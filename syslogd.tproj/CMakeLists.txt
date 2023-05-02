@@ -33,8 +33,8 @@ target_link_libraries(syslogd
 )
 
 install(TARGETS syslogd DESTINATION libexec/darling/usr/sbin)
-install(FILES asl.conf.osx RENAME asl.conf DESTINATION libexec/darling/etc)
+install(FILES asl.conf.osx RENAME asl.conf DESTINATION libexec/darling/private/etc)
 install(FILES com.apple.syslogd.plist DESTINATION libexec/darling/System/Library/LaunchDaemons)
-install(FILES syslog.conf DESTINATION libexec/darling/etc)
+install(FILES syslog.conf DESTINATION libexec/darling/private/etc)
 install(FILES syslogd.8 DESTINATION libexec/darling/usr/share/man/man8)
 install(FILES syslog.conf.5 DESTINATION libexec/darling/usr/share/man/man5)
