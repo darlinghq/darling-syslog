@@ -2,6 +2,7 @@ project(syslog-util)
 
 add_compile_options(
 	-nostdinc
+	-Wno-error=incompatible-function-pointer-types
 )
 
 include_directories(
