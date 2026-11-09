@@ -49,7 +49,8 @@ bsd_in_acceptmsg(int fd)
 {
 	uint32_t len;
 	int n;
-	char line[MAXLINE];
+	/* recvfrom may fill MAXLINE bytes; reserve the parser's terminator. */
+	char line[MAXLINE + 1];
 	struct sockaddr_un sun;
 	asl_msg_t *m;
 
