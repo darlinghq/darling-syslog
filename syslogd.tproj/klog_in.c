@@ -76,11 +76,12 @@ klog_in_acceptdata(int fd)
 		}
 	}
 
-	if (p != inbuf)
-	{
-		memmove(inbuf, p, BUFF_SIZE - bx - 1);
-		bx = q - p;
-	}
+	/* keep only the unparsed tail (an incomplete last line) at the start of the buffer */
+	bx = q - p;
+	if (p != inbuf) memmove(inbuf, p, bx);
+
+	/* a line longer than the buffer can never complete: drop it rather than stop reading */
+	if (bx >= BUFF_SIZE) bx = 0;
 }
 
 int
