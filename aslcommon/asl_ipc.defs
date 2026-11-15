@@ -32,6 +32,8 @@ import <sys/types.h>;
 type ooline_data = ^ array [] of MACH_MSG_TYPE_BYTE
 	ctype : caddr_t;
 
+type mach_msg_timeout_t = uint32_t;
+
 skip; /* removed: _asl_server_query */
 
 skip; /* removed: _asl_server_query_timeout */
@@ -52,7 +54,8 @@ simpleroutine _asl_server_message
 (
 	server : mach_port_t;
 	message : ooline_data, dealloc;
-	ServerAuditToken token : audit_token_t
+	ServerAuditToken token : audit_token_t;
+	sendtime timeout : mach_msg_timeout_t
 );
 
 simpleroutine _asl_server_register_direct_watch

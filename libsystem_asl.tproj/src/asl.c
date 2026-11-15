@@ -121,6 +121,15 @@ typedef struct
 	dispatch_semaphore_t sem;
 } asl_aux_context_t;
 
+/*
+ * Messages are sent to syslogd without waiting for a reply.  If syslogd is not
+ * receiving (it is stopped, hung, or being restarted by launchd), the port's
+ * queue fills up after a few messages.  A blocking send would then hang every
+ * process that logs, so the send is bounded and the message is dropped when it
+ * times out.
+ */
+#define ASL_SEND_TIMEOUT_MS 250
+
 typedef struct
 {
 	int notify_count;
@@ -1508,7 +1517,7 @@ _asl_send_message(asl_object_t obj, uint32_t eval, asl_msg_t *msg, const char *m
 			str = asl_string_release_return_bytes(send_str);
 			if (len != 0)
 			{
-				kstatus = _asl_server_message(_asl_global.server_port, (caddr_t)str, len);
+				kstatus = _asl_server_message(_asl_global.server_port, (caddr_t)str, len, ASL_SEND_TIMEOUT_MS);
 				if (kstatus != KERN_SUCCESS)
 				{
 					vm_deallocate(mach_task_self(), (vm_address_t)str, vmsize);
@@ -1551,7 +1560,7 @@ _asl_send_message(asl_object_t obj, uint32_t eval, asl_msg_t *msg, const char *m
 		if (len != 0)
 		{
 			/* send a mach message to syslogd */
-			kstatus = _asl_server_message(_asl_global.server_port, (caddr_t)str, len);
+			kstatus = _asl_server_message(_asl_global.server_port, (caddr_t)str, len, ASL_SEND_TIMEOUT_MS);
 			if (kstatus != KERN_SUCCESS)
 			{
 				vm_deallocate(mach_task_self(), (vm_address_t)str, vmsize);
