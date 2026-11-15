@@ -981,7 +981,7 @@ process_message(asl_msg_t *msg, uint32_t source)
 				if (kern_notify_token[kplevel] < 0)
 				{
 					status = notify_register_plain(kern_notify_key[kplevel], &(kern_notify_token[kplevel]));
-					if (status != 0) asldebug("notify_register_plain(%s) failed status %u\n", status);
+					if (status != 0) asldebug("notify_register_plain(%s) failed status %u\n", kern_notify_key[kplevel], status);
 				}
 
 				notify_post(kern_notify_key[kplevel]);

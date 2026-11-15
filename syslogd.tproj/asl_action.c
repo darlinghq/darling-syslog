@@ -451,7 +451,7 @@ _asl_dir_storedata_open(asl_out_rule_t *r, uint64_t xid)
 #if !TARGET_OS_SIMULATOR
 		if (chown(dstpath, r->dst->uid[0], r->dst->gid[0]) != 0)
 		{
-			asldebug("_asl_dir_storedata_open: chown %d %d new %s: %s\n", dstpath, r->dst->uid[0], r->dst->gid[0], strerror(errno));
+			asldebug("_asl_dir_storedata_open: chown %s %d %d: %s\n", dstpath, r->dst->uid[0], r->dst->gid[0], strerror(errno));
 			return -1;
 		}
 #endif
