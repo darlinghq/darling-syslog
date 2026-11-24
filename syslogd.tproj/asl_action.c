@@ -2038,7 +2038,7 @@ _asl_action_post_process_rule(asl_out_module_t *m, asl_out_rule_t *r)
 }
 
 static void
-_asl_action_configure()
+_asl_action_configure(bool startup)
 {
 	asl_out_rule_t *r;
 	asl_out_module_t *m;
@@ -2081,7 +2081,23 @@ _asl_action_configure()
 
 	if (flags & MODULE_FLAG_ROTATE)
 	{
-		_act_file_checkpoint_all(CHECKPOINT_TEST);
+		if (startup)
+		{
+			/*
+			 * This runs on the main thread, before bsd_in starts reading
+			 * /var/run/syslog.  Triggering aslmanager waits for its reply,
+			 * and aslmanager may be blocked sending to that socket, so
+			 * trigger it from the action queue instead.
+			 */
+			for (m = global.asl_out_module; m != NULL; m = m->next)
+			{
+				_act_file_checkpoint(m, NULL, CHECKPOINT_TEST);
+			}
+
+			dispatch_async(asl_action_queue, ^{ asl_trigger_aslmanager(); });
+		}
+		else _act_file_checkpoint_all(CHECKPOINT_TEST);
+
 		if (checkpoint_timer == NULL) _start_cycling();
 	}
 }
@@ -2090,8 +2106,10 @@ int
 asl_action_init(void)
 {
 	static dispatch_once_t once;
+	__block bool startup = false;
 
 	dispatch_once(&once, ^{
+		startup = true;
 		asl_action_queue = dispatch_queue_create("ASL Action Queue", NULL);
 #if (TARGET_OS_IPHONE && !TARGET_OS_SIMULATOR)
 		crashlog_queue = dispatch_queue_create("iOS CrashLog Queue", NULL);
@@ -2124,7 +2142,7 @@ asl_action_init(void)
 #endif
 	});
 
-	_asl_action_configure();
+	_asl_action_configure(startup);
 
 	return 0;
 }
